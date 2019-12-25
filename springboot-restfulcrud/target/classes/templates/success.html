@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="" th:href="@{/success.css}">
+</head>
+<body>
+<h1>成功！</h1>
+<!--th:text 将元素中的内容设置为传输的值-->
+<div id="id1" th:text="${hello}" th:id="${hello}">hello</div>
+<hr>
+<div th:text="${hello}"></div>
+<div th:utext="${hello}"></div>
+<hr>
+<!-- th:each每次遍历都会生成当前的这个标签（div） -->
+<div th:each="name : ${names}">
+    <p th:text="${name}"></p>
+</div>
+<hr>
+<h4>
+    <span th:text="${name}" th:each="name : ${names}"></span>
+</h4>
+<h5>
+    <!--行内写法，与上面等同-->
+    <span th:each="name : ${names}">[[${name}]]</span>
+</h5>
+<hr>
+<h1>[[${session.login}]]</h1>
+</body>
+</html>

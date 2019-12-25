@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .aa{
+            color: aqua;
+        }
+        .bb{
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<h1>欢迎！</h1>
+<hr>
+<span>[[#{index.tip}]]</span>
+<hr>
+<a  th:href="@{/index.html(language='en',country='US')}">English</a>
+<a  th:href="@{/index.html(language='zh',country='CN')}">中文</a>
+<hr>
+<form th:action="@{/user/login}" method="post">
+用户名：<input type="text" name="username"><br>
+密码：<input type="text" name="password"><br>
+<input type="submit" value="提交">
+    <p th:text="${msg}" th:if="${not #strings.isEmpty(msg)}"></p>
+</form>
+<!--<div th:insert="~{test::div}"></div>-->
+[(~{test/index::div})]
+<div th:replace="test/index::div"></div>
+</body>
+</html>
