@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Implementation-Title: springboot-war-01
+Implementation-Version: 0.0.1-SNAPSHOT
+Built-By: yzl
+Implementation-Vendor-Id: com.yzl
+Created-By: IntelliJ IDEA
+Build-Jdk: 1.8.0_211
+Main-Class: ${start-class}
+

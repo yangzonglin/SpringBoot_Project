@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.yzl.springboot.SpringbootWar01ApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.402 s - in com.yzl.springboot.SpringbootWar01ApplicationTests
