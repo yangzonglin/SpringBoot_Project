@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/shopping?serverTimezone=UTC
+    type: com.zaxxer.hikari.HikariDataSource
+  jpa:
+    #控制台显示执行的sql
+    show-sql: true
+    hibernate:
+      #更新或创建数据表结构
+      ddl-auto: update
