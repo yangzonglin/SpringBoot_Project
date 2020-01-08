@@ -9,12 +9,15 @@ import org.apache.ibatis.annotations.Update;
 @Mapper
 public interface UserMapper {
 
-    @Select("select * from tb_user where id = #{id} ")
+    @Select("select * from jpa_user where id = #{id} ")
     public User getById(Integer id);
 
-    @Update("update tb_user set sname=#{sname},spass_word=#{spassWord} where id=#{id}")
+    @Update("update jpa_user set sname=#{sname},spass_word=#{spassWord} where id=#{id}")
     public int updateById(User user);
 
-    @Delete("delete from tb_user where id = #{id}")
+    @Delete("delete from jpa_user where id = #{id}")
     public int deleteById(Integer id);
+
+    @Select("select * from jpa_user where spass_word = #{pass}")
+    User queryByPass(String pass);
 }

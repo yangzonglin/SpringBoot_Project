@@ -3,12 +3,17 @@ package com.yzl.cache.controller;
 import com.yzl.cache.mapper.UserMapper;
 import com.yzl.cache.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.*;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * @CacheConfig：配置这个类中所有的cacheNames、CacheManager等属性
+ * 行内优先级高于@CacheConfig
+ */
+@CacheConfig(cacheNames = "user")
 @RestController
 public class Controller {
 
@@ -56,6 +61,7 @@ public class Controller {
      *              如果没有参数：key=new SimpleKey();
      *              如果有一个参数：key=参数的值
      *              如果有多个参数：key=new SimpleKey(参数集合);
+     *      自定义keyGenerator：写一个keyGenerator加入容器，并把bean id配置@Cacheable中
      *  3、没有查到缓存就调用目标方法
      *  4、将目标方法返回的结果，放进缓存中
      *
@@ -69,14 +75,66 @@ public class Controller {
      * @return
      */
     @GetMapping("/user/{id}")
-    @Cacheable(cacheNames = "user" , key = "#root.methodName+'['+#a0+']'")
+    @Cacheable(cacheNames = "user1" , /*keyGenerator = "myKeyGenerator",*/key="#id",
+            condition = "#a0 > 0 and #root.methodName eq 'getById'",
+            unless = "#a0 == 3")
     public User getById(@PathVariable("id") Integer id){
         return userMapper.getById(id);
     }
 
+
+    /**
+     * @CachePut 既调用方法，又更新缓存数据(同步更新缓存)
+     * 修改了数据库的某个方法，同时更新缓存
+     * 运行时机：
+     *      1、先调用目标方法
+     *      2、将目标方法返回的结果缓存起来
+     *
+     *  更新时需要指定key与插入时的key相同：
+     *      1、key=“#object.property”（key = "#user.id"）
+     *      2、key="#result.id"（result表示返回值的对象，因为CachePut是在方法调用完之后执行，所以可以取到返回值）
+     * @param user
+     * @return
+     */
+    @CachePut(cacheNames = "user",key = "#user.id")
     @RequestMapping("/user")
     public User updateById(User user){
         userMapper.updateById(user);
         return user;
+    }
+
+    /**
+     * @CacheEvict：清除缓存
+     *      key：指定要清除的数据
+     *      allEntries：清除缓存中的所有数据，默认是false
+     *      beforeInvocation：清除缓存是否在方法执行之前执行，默认是false
+     * @param id
+     * @return
+     */
+    @CacheEvict(cacheNames = "user",allEntries = true/*,key = "#id"*/)
+    @GetMapping("deleteUser")
+    public String deleteUser(Integer id){
+        userMapper.deleteById(id);
+        return "success";
+    }
+
+    /**
+     * @Caching：包含多个@Cacheable、@CachePut、@CacheEvict，定义复杂的缓存规则
+     *  运用在比较复杂的，需要使用多种缓存的场景
+     * @param pass
+     * @return
+     */
+    @Caching(
+            cacheable = {
+                    @Cacheable(cacheNames = "user",key = "#pass")
+            },
+            put = {
+                    @CachePut(cacheNames = "user",key = "#result.id"),
+                    @CachePut(cacheNames = "user",key = "#result.sname")
+            }
+    )
+    @GetMapping("queryByPass")
+    public User queryByPass(String pass){
+        return userMapper.queryByPass(pass);
     }
 }
