@@ -18,7 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
  *      3.配置redis
  *      4.使用redis
  *          原理：CacheManager===Cache 缓存组件来实际给缓存中存取数据
- *          1）引入redis的starter，容器中保存的是RedisCacheConfiguration
+ *          1）引入redis的starter，容器中保存的是RedisCacheManager
+ *          2）RedisCacheManager 帮我们创建 RedisCache 来作为缓存组件；RedisCache通过操作Redis来缓存数据
+ *          3）默认保存数据K-V都是object；利用jdk的序列化保存。若要使用json来保存，就需要自定义RedisTemplate<Object,Object>来操作Redis；
+ *              再将自定义的RedisTemplate注入到自定义的RedisManager中即可
  *
  *
  * @Author yzl
