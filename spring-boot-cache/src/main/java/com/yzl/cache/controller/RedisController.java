@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
  *          3）默认保存数据K-V都是object；利用jdk的序列化保存。若要使用json来保存，就需要自定义RedisTemplate<Object,Object>来操作Redis；
  *              再将自定义的RedisTemplate注入到自定义的RedisManager中即可
  *
+ *  使用代码调用缓存，可以通过注入cacheManager，获得cache，通过cache进行CRUD操作
+ *
  *
  * @Author yzl
  * @Create 2020/1/9
