@@ -2,9 +2,13 @@ package com.yzl.cache.controller;
 
 import com.yzl.cache.pojo.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 /**
  * 缓存默认使用的是SimpleCacheConfiguration，其中manager和cache是ConcurrentMapCacheManager和ConcurrentMapCache，
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @Author yzl
  * @Create 2020/1/9
  */
+@RequestMapping("/redis")
 @RestController
 public class RedisController {
 
@@ -38,6 +43,7 @@ public class RedisController {
     @Autowired
     StringRedisTemplate stringRedisTemplate;//操作k-v都是字符串的
 
+    @Qualifier("myRedisTemplate")
     @Autowired
     RedisTemplate myRedisTemplate;//自定义的template
 
@@ -69,5 +75,17 @@ public class RedisController {
         //使用json保存对象
         myRedisTemplate.opsForValue().set("user",new User());
         return null;
+    }
+
+    @RequestMapping("/save")
+    public User saveUser(User user){
+        myRedisTemplate.opsForValue().set("user",user);
+        return user;
+    }
+
+    @RequestMapping("/get")
+    public User getUser(){
+        User user = (User) myRedisTemplate.opsForValue().get("user");
+        return user;
     }
 }

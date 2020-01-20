@@ -25,7 +25,7 @@ import java.util.List;
  * @Author yzl
  * @Create 2020/1/9
  */
-@Configuration
+@Configuration("cacheRedisTemplate")
 public class MyRedisTemplate {
 
     /**
@@ -34,7 +34,7 @@ public class MyRedisTemplate {
      * @return
      * @throws UnknownHostException
      */
-    @Bean
+    @Bean("myRedisTemplate")
     public RedisTemplate<Object, Object> myRedisTemplate(RedisConnectionFactory redisConnectionFactory)
             throws UnknownHostException {
         RedisTemplate<Object, Object> template = new RedisTemplate<>();
@@ -44,6 +44,11 @@ public class MyRedisTemplate {
         return template;
     }
 
+    /**
+     * redis自定义序列化方式（使用json），默认是使用jvm的序列化
+     * @param connectionFactory
+     * @return
+     */
     @Bean
     RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ZERO)
