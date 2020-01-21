@@ -100,7 +100,7 @@ springboot2.0以上至少需要jdk1.8和maven3.2**
        - JmsAutoConfiguration
        - RabbitAutoConfiguration
 
-     
+​     
 
 ### 2.RabbitMQ简介
 
@@ -125,7 +125,6 @@ RabbitMQ是一个由erlang开发的AMQP（Advanved Message Queue Protocol）的�
 交换器，用来接收生产者发送的消息并将这些消息路由给服务器中的队列。
 
 <table><tr><td bgcolor="#ff6666">Exchange有4种类型：direct（默认该类型，点对点的类型）、fanout、topic、和headers（后三种为pub/sub类型），不同类型的Exchange转发消息的策略有所区别。</td></tr></table>
-
 **<font color="blue">Queue</font>**
 
 消息队列，用来保存消息直到发送给消费者。它是消息的容器，也是消息的终点。一个消息可投入一个或多个队列。消息一直在队列里面，等待消费者连接到这个队列将其取走。
@@ -191,14 +190,41 @@ topic交换器通过模式（模糊）匹配分配消息的路由键属性，将
   1. 引入spring-boot-starter-amqp
 
      ```yml
-     
+     <dependency>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-amqp</artifactId>
+     </dependency>
      ```
 
      
 
   2. application.yml配置
 
+       ```yml
+       #用户名密码默认为guest，端口也是默认的
+       spring.rabbitmq.host=106.12.189.90
+       ```
+
+       
+
   3. 测试RabbitMQ：
 
        - AmqpAdmin：管理组件
        - RabbitTemplate：消息发送处理组件
+
+
+
+## 十二、SpringBoot 与 检索（ElasticSearch）
+
+### 1、检索
+
+我们的应用经常需要添加检索功能，开源的ElasticSearch是目前全文搜索引擎的首选。他可以快速的存储、搜索和分析海量数据。SpringBoot通过整合Spring Data ElasticSearch为我们提供了非常便捷的检索功能支持。
+
+ElasticSearch是一个分布式搜索服务，提供的Restful API，底层基于Lucene，采用多shard（分片）的方式保证数据安全，并且提供自动resharding的功能，github等大型的站点也是采用了ElasticSearch作为其搜索服务。
+
+**docker运行ElasticSearch： **
+
+​	docker run -e ES_JAVA_OPTS="-Xms256m -Xmx256m" -d -p 9200:9200 -p 9300:9300 --name myES 7516701e4922
+
+<table><tr><td bgcolor="#ff6666">docker启动默认占用内存为2G，所以根据自身服务器可以更改启动的内存占用：-e ES_JAVA_OPTS="-Xms256m -Xmx256m"。9200端口是ES进行web通信的端口，9300是ES分布式情况下各个节点之间的通信端口。</td></tr></table>
+
