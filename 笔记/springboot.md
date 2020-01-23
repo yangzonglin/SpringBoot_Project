@@ -228,3 +228,15 @@ ElasticSearch是一个分布式搜索服务，提供的Restful API，底层基�
 
 <table><tr><td bgcolor="#ff6666">docker启动默认占用内存为2G，所以根据自身服务器可以更改启动的内存占用：-e ES_JAVA_OPTS="-Xms256m -Xmx256m"。9200端口是ES进行web通信的端口，9300是ES分布式情况下各个节点之间的通信端口。</td></tr></table>
 
+
+
+### 2、概念
+
+* 以员工文档的形式存储为例：一个<font color=red>文档</font>代表一个员工数据。存储数据到ElasticSearch的行为叫做<font color=red>索引</font>，但在索引一个文档之前，需要确定将文档存储在哪里。
+* 一个ElasticSearch集群可以包含多个<font color=red>索引</font>，相应的每个索引可以包含多个<font color=red>类型</font>。这些不同的类型存储着多个<font color=red>文档</font>，每个文档又有多个<font color=red>属性</font>。
+* 类似关系：
+  - 索引-数据库
+  - 类型-表
+  - 文档-表中的记录
+  - 属性-列
+
