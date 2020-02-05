@@ -229,14 +229,45 @@ ElasticSearch是一个分布式搜索服务，提供的Restful API，底层基�
 <table><tr><td bgcolor="#ff6666">docker启动默认占用内存为2G，所以根据自身服务器可以更改启动的内存占用：-e ES_JAVA_OPTS="-Xms256m -Xmx256m"。9200端口是ES进行web通信的端口，9300是ES分布式情况下各个节点之间的通信端口。</td></tr></table>
 
 
-
 ### 2、概念
 
 * 以员工文档的形式存储为例：一个<font color=red>文档</font>代表一个员工数据。存储数据到ElasticSearch的行为叫做<font color=red>索引</font>，但在索引一个文档之前，需要确定将文档存储在哪里。
+
 * 一个ElasticSearch集群可以包含多个<font color=red>索引</font>，相应的每个索引可以包含多个<font color=red>类型</font>。这些不同的类型存储着多个<font color=red>文档</font>，每个文档又有多个<font color=red>属性</font>。
+
 * 类似关系：
   - 索引-数据库
   - 类型-表
   - 文档-表中的记录
   - 属性-列
+  
+* RESTFUL API：
+
+  将 HTTP 命令由 `PUT` 改为 `GET` 可以用来检索文档，同样的，可以使用 `DELETE` 命令来删除文档，以及使用 `HEAD` 指令来检查文档是否存在。如果想更新已存在的文档，只需再次 `PUT` 。(第一次put数据是insert，第二次put相同id的数据则为update)
+
+### 3、应用
+
+```java
+SpringBoot默认支持3种技术来和ES交互（1.X为2种，2,X新增RestClient方式）
+1.Jest（默认不生效）
+     需要导入jest的工具包：（大版本号需要和ES的大版本号相同）
+         <dependency>
+            <groupId>io.searchbox</groupId>
+            <artifactId>jest</artifactId>
+            <version>5.3.4</version>
+        </dependency>
+ 2.SpringData ElasticSearch[ES版本需要和springdata的es版本对应]
+     （PS：如果遇到不适配情况，可以通过两个方式解决：1.升级springboot版本2.安装对应版本的ES）
+     https://docs.spring.io/spring-data/elasticsearch/docs/3.2.0.RC3/reference/html/#preface.versions
+     1）Client：节点信息 clusterNodes、clusterName
+     2）ElasticSearchTemplate操作ES
+     3）编写一个ElasticsearchRepository的子接口来操作ES
+ 3.RestClient(Java High Level REST Client)操作ES
+```
+
+​		1.使用jest是用JestClient来操作ES，标记索引id用@JestId
+
+​		2.使用SpringData ElasticSearch操作ES，需要在实体上添加注解@Document(indexName = "",type = "")指定索引名和类型名，然后创建该实体类型的repository接口，继承ElasticsearchRepository接口（泛型为实体类及其主键类型），通过该repository来操作ES
+
+
 
