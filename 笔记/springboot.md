@@ -227,8 +227,6 @@ ElasticSearch是一个分布式搜索服务，提供的Restful API，底层基�
 ​	docker run -e ES_JAVA_OPTS="-Xms256m -Xmx256m" -d -p 9200:9200 -p 9300:9300 --name myES 7516701e4922
 
 <table><tr><td bgcolor="#ff6666">docker启动默认占用内存为2G，所以根据自身服务器可以更改启动的内存占用：-e ES_JAVA_OPTS="-Xms256m -Xmx256m"。9200端口是ES进行web通信的端口，9300是ES分布式情况下各个节点之间的通信端口。</td></tr></table>
-
-
 ### 2、概念
 
 * 以员工文档的形式存储为例：一个<font color=red>文档</font>代表一个员工数据。存储数据到ElasticSearch的行为叫做<font color=red>索引</font>，但在索引一个文档之前，需要确定将文档存储在哪里。
@@ -267,7 +265,133 @@ SpringBoot默认支持3种技术来和ES交互（1.X为2种，2,X新增RestClien
 
 ​		1.使用jest是用JestClient来操作ES，标记索引id用@JestId
 
-​		2.使用SpringData ElasticSearch操作ES，需要在实体上添加注解@Document(indexName = "",type = "")指定索引名和类型名，然后创建该实体类型的repository接口，继承ElasticsearchRepository接口（泛型为实体类及其主键类型），通过该repository来操作ES
+​		2.使用SpringData ElasticSearch操作ES，需要在实体上添加注解@Document(indexName = "",type = "")指定索引名和类型名，然后创建该实体类型的repository接口，继承ElasticsearchRepository接口（泛型为实体类及其主键类型），通过该repository来操作ES。
 
 
 
+## 十三、SpringBoot与任务
+
+### 1、异步任务
+
+让方法异步执行：
+
+在方法上加注解@Async，并在主程序类上添加注解@EnableAsync即可。
+
+### 2、定时任务
+
+项目开发中经常需要执行一些定时任务，比如需要在每天凌晨的时候，分析一次前一天的日志信息。Spring为我们提供了异步执行任务调度的方式，提供TaskExecutor、TaskSchedule接口。
+
+<b><font style="color:blue">两个注解：</font></b>@EnableScheduling、@Scheduled
+
+<b><font style="color:blue">cron表达式：</font></b>
+
+Cron表达式由7个部分组成，各部分用空格隔开，Cron表达式的7个部分从左到右代表的含义如下：
+
+```
+秒 分 时 日 月 周 年
+```
+
+| 字段                     | 允许值                                                       | 允许的特殊字符             |
+| ------------------------ | ------------------------------------------------------------ | -------------------------- |
+| 秒（Seconds）            | 0~59的整数                                                   | , - * /   四个字符         |
+| 分（*Minutes*）          | 0~59的整数                                                   | , - * /   四个字符         |
+| 小时（*Hours*）          | 0~23的整数                                                   | , - * /   四个字符         |
+| 日期（*DayofMonth*）     | 1~31的整数（但是你需要考虑你月的天数）                       | ,- * ? / L W C   八个字符  |
+| 月份（*Month*）          | 1~12的整数或者 JAN-DEC                                       | , - * /   四个字符         |
+| 星期（*DayofWeek*）      | <font style="color:red">0~7的整数或者 SUN-SAT （0和7=SUN），<br />在Quartz中为1-7,1表示周天</font> | , - * ? / L C #   八个字符 |
+| 年(可选，留空)（*Year*） | 1970~2099                                                    | , - * /   四个字符         |
+
+<b><font style="color:blue">cron表达式符号说明：</font></b>
+
+- `,`：表示列出枚举值值。例如在`分`使用5,20，则意味着在5和20分每分钟触发一次。
+- `-`：表示范围。例如在`分`使用5-20，表示从5分到20分钟每分钟触发一次。
+- `*` ：表示匹配该域的任意值。假如在`分`域使用`*`，即表示每分钟都会触发事件。
+- `/` ：表示起始时间开始触发，然后每隔固定时间触发一次，例如在Minutes域使用5/20,则意味着从5分钟开始每20分钟触发一次，即5，25，45,分别触发一次。
+- `?` ：只能用在`周`和`日`。它也匹配域的任意值，但实际不会。因为`周`和`日`会相互影响。例如想在每月的20日触发调度，不管20日到底是星期几，则只能使用如下写法： 13 13 15 20 * ?,其中最后一位只能用？，而不能使用*，如果使用*表示不管星期几都会触发，实际上并不是这样。
+- `L` ： 表示最后，只能出现在`日`和`周`，如果在`日`使用5L,意味着在最后的一个星期四触发。
+- `W`：表示有效工作日(周一到周五),只能出现在`周`域，系统将在离指定日期的最近的有效工作日触发事件。例如：在`日`使用5W，如果5日是星期六，则将在最近的工作日：星期五，即4日触发。如果5日是星期天，则在6日触发；如果5日在星期一到星期五中的一天，则就在5日触发。另外一点，W的最近寻找不会跨过月份。
+- `#`：用于确定每个月第几个星期几，只能出现在`周`。例如在4#2，表示某月的第二个星期三。
+
+<b><font style="color:blue">cron表达式范例：</font></b>
+
+- `*/5 * * * * ?` ：每隔5秒执行一次
+- `0 */1 * * * ?` ：每隔1分钟执行一次
+- `0 0 23 * * ?` ：每天23点执行一次
+- `0 0 1 * * ?` ：每天凌晨1点执行一次：
+- `0 0 1 1 * ?` ：每月1号凌晨1点执行一次
+- `0 0 23 L * ?` ： 每月最后一天23点执行一次
+- `0 0 1 ? * L` ：每周星期天凌晨1点实行一次
+- `0 26,29,33 * * * ?` ： 在26分、29分、33分执行一次
+- `0 0 0,13,18,21 * * ?` ： 每天的0点、13点、18点、21点都执行一次
+
+<b><font style="color:blue">代码中应用：</font></b>
+
+主配置类上添加注解@EnableScheduling开启定时任务功能，在需要定时任务的方法上添加注解@Scheduled(cron = "50/9 * * * * ?")并编写cron表达式。
+
+### 3、邮件任务
+
+* 邮件发送需要引入spring-boot-starter-mail
+
+* Spring Boot自动配置MailSenderAutoConfiguration
+
+* 定义MailProperties内容，配置在application.yml中
+
+  ```yml
+  spring.mail.username=981768766@qq.com
+  #在邮箱设置POP3/SMTP服务开启，并生成授权码，授权码即该密码设置
+  spring.mail.password=vjfeyemqlsjgbcdj
+  spring.mail.host=smtp.qq.com
+  
+  #邮箱需要ssl安全登陆，所以需要开启smtp的ssl，额外的属性都在spring.mail.properties中配置
+  spring.mail.properties.mail.smtp.ssl.enable=true
+  ```
+
+* 自动装配JavaMailSender
+
+  ```java
+  @Autowired
+  JavaMailSenderImpl javaMailSenderImpl;
+  
+  //测试普通邮件
+  @Test
+  void contextLoads() {
+      //简单邮件对象
+      SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+      //邮件设置
+      simpleMailMessage.setSubject("通知：12点吃饭");//邮件标题
+      simpleMailMessage.setText("到12点吃饭啦");//邮件内容，默认非html格式内容
+      simpleMailMessage.setTo("404230554@qq.com");//发送给哪些邮箱
+      simpleMailMessage.setFrom("981768766@qq.com");//谁发送的
+  
+      javaMailSenderImpl.send(simpleMailMessage);
+  }
+  
+  //发送复杂邮件，包含附件等
+  @Test
+  void sendMessage() throws Exception {
+      //创建复杂邮件对象
+      MimeMessage mimeMessage = javaMailSenderImpl.createMimeMessage();
+      MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);//true是包含文件上传，即附件
+      //使用helper对象进行邮件设置
+      mimeMessageHelper.setSubject("通知：12点吃饭");//邮件标题
+      mimeMessageHelper.setText("<b style='color:red'>到12点吃饭啦</b>",true);//邮件内容，默认非html格式内容
+      mimeMessageHelper.setTo("3575377587@qq.com");//发送给哪些邮箱
+      mimeMessageHelper.setFrom("981768766@qq.com");//谁发送的
+      //上传文件
+      mimeMessageHelper.addAttachment("1.jpg",new File("E:\\高清图片\\QQ图片20200205173622.jpg"));
+      mimeMessageHelper.addAttachment("2.jpg",new File("E:\\高清图片\\QQ图片20200205173643.jpg"));
+  
+      javaMailSenderImpl.send(mimeMessage);
+  }
+  ```
+
+* 测试邮件发送
+
+
+
+## 十四、SpringBoot与安全（安全、Spring Security）
+
+* 应用程序的两个主要区域是“认证”和“授权”（或者访问控制）。这两个主要区域是Spring Security的两个目标。
+* “认证”（Authentication），是建立一个他声明的主体的过程（一个“主体”一般是指用户，设备或一些可以在你的应用程序中执行动作的其他系统）。
+* “授权”（Authorization）指确定一个主体是否允许在你的应用程序执行一个动作的过程。为了抵达需要授权的店，主体的身份已经有认证过程建立。
+* 这个概念是通用的而不只在Spring Security中。
