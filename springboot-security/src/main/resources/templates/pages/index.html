@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head>
     <meta charset="UTF-8">
     <title>首页</title>
@@ -10,15 +12,22 @@
     </style>
 </head>
 <body>
-<h1>欢迎来到首页</h1>
-<div>
+<div sec:authorize="isAuthenticated()"><!--判断是否登录-->
+    <h1>欢迎<span sec:authentication="name"></span>来到首页,您的权限有：<span sec:authentication="principal.authorities"></span></h1>
+    <a th:href="@{/logout}">注销</a>
+</div>
+<div sec:authorize="!isAuthenticated()">
+    <h1>欢迎游客来到首页,<a th:href="@{/loginPage}">请登录</a></h1>
+</div>
+
+<div sec:authorize="hasRole('VIP1')">
     <a th:href="@{/vip1}">VIP1</a>
 </div>
-<div>
-    <a href="javascript:void(0);">VIP2</a>
+<div sec:authorize="hasRole('VIP2')">
+    <a th:href="@{/vip2}">VIP2</a>
 </div>
-<div>
-    <a href="javascript:void(0);">VIP3</a>
+<div sec:authorize="hasRole('VIP1')">
+    <a th:href="@{/vip3}">VIP3</a>
 </div>
 </body>
 </html>
