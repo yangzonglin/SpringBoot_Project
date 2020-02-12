@@ -1,0 +1,11 @@
+server:
+  port: 8001
+spring:
+  application:
+    name: springcloud-eureka-provider
+eureka:
+  instance:
+    prefer-ip-address: true   #注册服务时候使用服务的ip地址
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/  #注册中心地址
