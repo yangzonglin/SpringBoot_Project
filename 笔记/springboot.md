@@ -519,3 +519,190 @@ public class MyPasswordEncoder implements PasswordEncoder {
 
 ## 十五、Spring Boot 与 分布式（分步式、Dubbo/Zookeeper、SpringBoot/Cloud）
 
+### 1.分布式应用
+
+在分布式系统中，国内常用Zookeeper+dubbo组合，而Spring Boot推荐使用全栈的Spring，Spring Boot + Spring Cloud。
+
+分布式系统：
+
+![dubbo1](D:\ProgramCode\SpringBoot\SpringBoot_Study\笔记\images\dubbo1.png)
+
+### 2.Zookeeper和Dubbo
+
+* **Zookeeper**
+
+  Zookeeper是一个分布式的，开放源码的分布式应用程序协调服务。它是一个为分布式应用提供一致性服务的软件，提供的功能包括：配置维护、域名服务、分布式同步、组服务等。
+
+* **Dubbo**
+
+  Dubbo是Alibaba开源的分布式服务框架，它最大的特点是按照分层的方式来架构，使用这种方式可以使各个层之间解耦合（或者最大限度地松耦合）。从服务模型的角度看，Dubbo采用的是一种非常简单的模型，要么是提供方提供服务，要么是消费方消费服务，所以基于这一点可以抽象出服务提供方（Provider）和服务消费方（Customer）两个角色。
+
+  ![dubbo2](D:\ProgramCode\SpringBoot\SpringBoot_Study\笔记\images\dubbo2.png)
+
+| 节点      | 说明                                   |
+| --------- | -------------------------------------- |
+| Text      | Text                                   |
+| Provider  | 暴露服务的服务提供方                   |
+| Consumer  | 调用远程服务的服务消费方               |
+| Registry  | 服务注册与发现的注册中心               |
+| Monitor   | 统计服务的调用次数和调用时间的监控中心 |
+| Container | 服务运行容器                           |
+
+### 3.调用关系说明
+
+服务容器负责启动，加载，运行服务提供者。
+服务提供者在启动时，向注册中心注册自己提供的服务。
+服务消费者在启动时，向注册中心订阅自己所需的服务。
+注册中心返回服务提供者地址列表给消费者，如果有变更，注册中心将基于长连接推送变更数据给消费者。
+服务消费者，从提供者地址列表中，基于软负载均衡算法，选一台提供者进行调用，如果调用失败，再选另一台调用。
+服务消费者和提供者，在内存中累计调用次数和调用时间，定时每分钟发送一次统计数据到监控中心。
+
+### 4.springboot整合dubbo
+
+springboot1.X和2.X整合dubbo主要在pom.xml中区别较大：
+
+在2.X中的pom.xml：
+
+```xml
+<!-- 升级 apache dubbo -->
+<dependency>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo</artifactId>
+    <version>2.7.3</version>
+</dependency>
+<!-- Zookeeper -->
+<dependency>
+    <groupId>org.apache.zookeeper</groupId>
+    <artifactId>zookeeper</artifactId>
+    <version>3.5.3-beta</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.curator</groupId>
+    <artifactId>curator-framework</artifactId>
+    <version>4.2.0</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.curator</groupId>
+    <artifactId>curator-recipes</artifactId>
+    <version>4.2.0</version>
+</dependency>
+<!-- 最新 starter -->
+<dependency>
+    <groupId>org.apache.dubbo</groupId>
+    <artifactId>dubbo-spring-boot-starter</artifactId>
+    <version>2.7.3</version>
+</dependency>
+```
+
+在1.X中的pom：
+
+```xml
+<dependency>
+    <groupId>com.alibaba.boot</groupId>
+    <artifactId>dubbo-spring-boot-starter</artifactId>
+    <version>0.1.2.RELEASE</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/com.github.sgroschupf/zkclient -->
+<dependency>
+    <groupId>com.github.sgroschupf</groupId>
+    <artifactId>zkclient</artifactId>
+    <version>0.1</version>
+</dependency>
+```
+
+在2.X中使用注解@Reference和@Service都需要给值version = "1.0.0"；
+
+其中@Service在提供者的service上加，@Reference在消费者上加。
+
+需要配置的基础项有以下三个，其中扫描包在消费者中不配置：
+
+```properties
+#配置服务名称
+dubbo.application.name=dubbo-provider-ticket
+#配置服务注册（zk）的地址
+dubbo.registry.address=zookeeper://106.12.189.90:2181
+#配置需要注册服务的包名
+dubbo.scan.base-packages=com.yzl.ticket.service
+```
+
+在消费者中，需要服务全包名的接口引用（保证两个项目com.xxx相同），然后用@Reference来进行引用服务。
+
+### 5.SpringBoot和SpringCloud
+
+**SpringCloud**
+
+SpringCloud是一个分布式的整体解决方案。SpringCloud为开发者提供了**在分布式系统（配置管理，服务发现，熔断，路由，微代理，控制总线，一次性token，全局锁，leader选举，分布式session，集群状态）中快速构建的工具，**使用SpringCloud的开发者可以快速的启动服务或构建应用、同时能够快速和云平台资源进行对接。
+
+* SpringCloud分布式开发五大常用组件
+  * 服务发现——Netflix Eureka
+  * 客户端负载均衡——Netflix Ribbon
+  * 熔断器——Netflix Hystrix
+  * 服务网关——Netflix Zuul
+  * 分布式配置——Spring Cloud Config
+
+eureka注册中心配置：
+
+```yml
+server:
+  port: 8761
+eureka:
+  instance:
+    hostname: springcloud-eureka-service  #eureka实例的主机名
+  client:
+    register-with-eureka: false #不把自己注册到eureka上
+    fetch-registry: false #不从eureka上获取服务的注册信息
+    service-url:  #注册中心的地址：key-value组成
+      defaultZone: http://localhost:8761/eureka/
+```
+
+eureka服务提供配置：
+
+```yml
+server:
+  port: 8001
+spring:
+  application:
+    name: springcloud-eureka-provider
+eureka:
+  instance:
+    prefer-ip-address: true   #注册服务时候使用服务的ip地址
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/  #注册中心地址
+```
+
+eureka消费者配置：
+
+```yml
+server:
+  port: 8100
+spring:
+  application:
+    name: springcloud-eureka-customer
+eureka:
+  instance:
+    prefer-ip-address: true   #注册服务时候使用服务的ip地址
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/  #注册中心地址
+```
+
+消费者使用RestTemplate调用服务：
+
+```java
+@EnableDiscoveryClient  //开启服务发现的功能
+@SpringBootApplication
+public class SpringcloudEurekaCustomerApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(SpringcloudEurekaCustomerApplication.class, args);
+    }
+
+    @LoadBalanced   //（发送http请求）启用负载均衡机制
+    @Bean
+    public RestTemplate restTemplate(){
+        return new RestTemplate();
+    }
+}
+```
+
