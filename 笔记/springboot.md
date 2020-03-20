@@ -18,13 +18,133 @@
 
 
 
-### 3.创建springboot项目（目前自己使用的是IDEA）
+### 3.创建springboot项目
 
 **环境要求：
 springboot1.2以上至少需要jdk1.7和maven3.2
 springboot2.0以上至少需要jdk1.8和maven3.2**
 
 
+
+## 二、SpringBoot配置文件
+
+SpringBoot使用两个全局的配置文件：
+
+bootstrap.yml/properties和application.yml/properties
+
+**作用：修改SpringBoot的默认配置**
+
+一、YML
+
+YAML（YAML Ain't Markup Language）——以数据为中心，比json、xml更适合作为配置文件，相较于xml，少了许多的标签，更加简洁
+
+英文的含义：
+
+​	YAML A Markup Language：是一个标记语言
+
+​	YAML isn't Markup Language：不是一个标记语言
+
+1. **yml基本语法**
+
+   key: <font style="color:red">(此处有空格)</font>value
+
+   以缩进格式来确定层级关系，例如：
+
+   person:
+
+   ​	age: 17
+
+   ​	name: as
+
+   animal: null
+
+2. **yml数据类型**
+
+   * 字面量（字符串，布尔值，数字）
+
+     直接写值即可，字符串有引号区别。
+
+     **" "：双引号不会转义字符里面的特殊字符，例如字符含有/t则会变成制表符**
+
+     **' '：单引号会转义特殊字符，变成一个字符串来输出**
+
+   * Map和对象
+
+     （1）以换行缩进格式
+
+     （2）行内写法：person: {age: 1,name: sss}，**使用大括号。**
+
+   * 数组和List
+
+     （1）换行缩进格式
+
+     ​	person:
+
+     ​		- lisan
+
+     ​		- zhangsan
+
+     （2）行内写法
+
+     ​	person: [lisan,zhangsan,lisi] （在properties文件中的写法为：data.person=a,b,c）
+
+     **tips：properties文件在idea会出现中文乱码，需要设置utf-8编码，在设置的file encodings中**
+
+3. **获取配置文件的值**
+
+   （1）@ConfigurationProperties（javabean与配置文件属性绑定）
+
+   ​		该注解告诉springboot将本类中的所有属性和配置文件中的配置进行绑定。
+
+   ​		其中prefix属性指定与配置文件中的哪个key下面的属性进行绑定
+
+   （2）@Value
+
+   ​		每个属性进行设置，支持三种设置方法
+
+   （3）@ConfigurationProperties和@Value比较
+
+   |                                     | @ConfigurationProperties | @Value         |
+   | ----------------------------------- | ------------------------ | -------------- |
+   | 功能                                | 批量注入配置文件中的属性 | 需每个属性设置 |
+   | 松散绑定（Relaxed binding）         | 支持                     | 不支持         |
+   | SpEl                                | 不支持                   | 支持           |
+   | JSR303数据校验                      | 支持                     | 不支持         |
+   | 复杂类型封装（例如map，list，对象） | 支持                     | 不支持         |
+
+   **ps**:松散绑定，例如yml中属性为lastName/last_name/last-name，都可以与实体中的lastName绑定
+
+   **两者的使用场景：**
+
+    * @Value
+
+      只在某个业务逻辑中需要使用一下配置文件的某项值
+
+      ```java
+      @RestController
+      public class HelloController {
+      
+          @Value("${person.name}")
+          public String name;
+      
+          @RequestMapping("/hello")
+          public String hello(){
+              return "hello "+name;
+          }
+      }
+      ```
+
+    * @ConfigurationProperties
+
+      专门编写来的一个javaBean的java类来映射配置文件中的值,例如AutoConfiguration中的Properties类。
+
+4. 3
+
+5. 4
+
+6. 5
+
+7. 6
 
 
 
@@ -705,4 +825,97 @@ public class SpringcloudEurekaCustomerApplication {
     }
 }
 ```
+
+
+
+## 十六、SpringBoot与开发热部署
+
+### 1、热部署
+
+在开发中我们修改一个Java文件后想看到效果不得不重启应用，这导致大量时间花费，我们希望不重启应用的情况下，程序可以自动部署（热部署）。有以下四种情况，如何能实现热部署：
+
+* a.模板引擎
+
+  * 在Spring Boot中开发情况下禁用模板引擎的cache
+  * 页面模板改变ctrl+f9可以重新编译当前页面并生效
+
+* b.Spring Loaded：Spring官方提供的热部署程序，实现修改类文件的热部署
+
+  * 下载Spring Loaded（项目地址https://github.com/spring-projects/spring-loaded）
+  * 添加运行时参数：-javaagent:C:/springloaded-1.2.5.RELEASE.jar -noverify
+
+* c.JRebel
+
+  * 收费的一个热部署软件
+  * 安装插件使用即可
+
+* d.Spring Boot Devtools（推荐）
+
+  * 引入依赖
+
+    ```xml
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-devtools</artifactId>
+        <optional>true</optional>
+    </dependency>
+    ```
+
+  * IDEA使用ctrl+f9进行热部署
+
+  * 或做一些小调整
+    IDEA和Eclipse不同，Eclipse设置了自动编译之后，修改类它会自动编译，而IDEA在非RUN或DEBUG情况下才会自动编译（前提是设置了Auto-Compile）
+
+    * 设置自动编译（settings-complie-make project automatically）
+    * ctrl+shift+art+/ (maintenance)
+    * 勾选compile.automake.allow.when.app.running
+
+
+
+## 十七、SpringBoot与监控管理
+
+### 1、监控管理
+
+通过引入spring-boot-starter-actuator，可以使用Spring Boot为我们提供的准生产环境下的应用监控和管理功能。我们可以通过HTTP，JMX，SSH协议来进行操作，自动得到审计、健康及指标信息等。
+
+**步骤：**
+
+* 引入spring-boot-starter-actuator依赖
+* 通过http方式访问监控端点
+* 可进行shutdown(POST提交，此端点默认关闭)
+
+**监控和管理端点：**
+
+| Endpoint ID    | Description                                                  |
+| -------------- | ------------------------------------------------------------ |
+| auditevent     | 显示应用暴露的审计事件（比如认证进入、订单失败）             |
+| beans          | 所有Bean的信息                                               |
+| info           | 显示应用的基本信息（在application中配置以info.开头的信息）   |
+| health         | 显示应用的健康状态                                           |
+| metrics        | 显示应用多样的度量信息                                       |
+| loggers        | 显示和修改配置的loggers                                      |
+| logfile        | 返回log file中的内容(如果logging.file或者logging.path被设置) |
+| httptrace      | 显示HTTP足迹，最近100个HTTP request／reponse                 |
+| dump           | 线程状态信息                                                 |
+| env            | 显示当前的环境特性                                           |
+| flyway         | 显示数据库迁移路径的详细信息                                 |
+| shutdown       | 优雅地逐步关闭应用                                           |
+| mappings       | 显示所有的@RequestMapping路径                                |
+| scheduledtasks | 显示应用中的调度任务                                         |
+| threaddump     | 执行一个线程dump                                             |
+| heapdump       | 返回一个GZip压缩的JVM堆dump                                  |
+
+### 2、定制端点信息
+
+* 定制端点一般通过endpoints+端点名+属性名来设置。
+* 修改端点id（endpoints.beans.id=mybeans）
+* 开启远程应用关闭功能（endpoints.shutdown.enabled=true）
+* 关闭端点（endpoints.beans.enabled=false）
+* 开启所需端点
+  * endpoints.enabled=false
+  * endpoints.beans.enabled=true
+* 定制端点访问路径
+  * management.context-path=/manage
+* 关闭http端点
+  * management.port=-1
 
